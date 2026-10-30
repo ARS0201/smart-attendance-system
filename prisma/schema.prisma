@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  password       String
+  name           String
+  rollNumber     String?      @unique
+  role           String       @default("STUDENT") // STUDENT | FACULTY | ADMIN
+  department     String       @default("Computer Science & Engineering")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  taughtCourses  Course[]     @relation("FacultyCourses")
+  enrollments    Enrollment[]
+  sessions       Session[]    @relation("FacultySessions")
+  attendances    Attendance[]
+  odRequests     OdRequest[]  @relation("StudentOds")
+  reviewedOds    OdRequest[]  @relation("ReviewedOds")
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  department  String
+  semester    Int
+  facultyId   String
+  faculty     User         @relation("FacultyCourses", fields: [facultyId], references: [id], onDelete: Restrict)
+  enrollments Enrollment[]
+  sessions    Session[]
+  createdAt   DateTime     @default(now())
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  studentId  String
+  courseId   String
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime @default(now())
+
+  @@unique([studentId, courseId])
+}
+
+model Session {
+  id            String       @id @default(cuid())
+  courseId      String
+  facultyId     String
+  title         String
+  sessionDate   DateTime     @default(now())
+  startTime     DateTime     @default(now())
+  endTime       DateTime?
+  status        String       @default("ACTIVE") // ACTIVE | COMPLETED
+  qrSecret      String       @default(cuid())
+  currentOtp    String?
+  otpExpiresAt  DateTime?
+  classroomName String?      @default("Auditorium Hall 101")
+  
+  course        Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  faculty       User         @relation("FacultySessions", fields: [facultyId], references: [id], onDelete: Restrict)
+  attendances   Attendance[]
+  createdAt     DateTime     @default(now())
+}
+
+model Attendance {
+  id                 String   @id @default(cuid())
+  sessionId          String
+  studentId          String
+  markedAt           DateTime @default(now())
+  status             String   @default("PRESENT") // PRESENT | LATE | ON_DUTY | ABSENT
+  verificationMethod String   @default("QR_SCAN") // QR_SCAN | MANUAL_FACULTY | OD_APPROVED
+  deviceInfo         String?
+  ipAddress          String?
+  notes              String?
+
+  session            Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student            User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, studentId])
+}
+
+model OdRequest {
+  id           String    @id @default(cuid())
+  studentId    String
+  title        String
+  category     String    @default("ACADEMIC") // ACADEMIC | SPORTS | CULTURAL | MEDICAL | INTERNSHIP
+  fromDate     DateTime
+  toDate       DateTime
+  reason       String
+  documentUrl  String?
+  status       String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedById String?
+  reviewedAt   DateTime?
+  remarks      String?
+
+  student      User      @relation("StudentOds", fields: [studentId], references: [id], onDelete: Cascade)
+  reviewedBy   User?     @relation("ReviewedOds", fields: [reviewedById], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
