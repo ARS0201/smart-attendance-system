@@ -35,13 +35,13 @@ export async function GET() {
     let totalPresentAllCourses = 0;
     let totalOdAllCourses = 0;
 
-    const courseStats = enrollments.map((e) => {
+    const courseStats = enrollments.map((e: any) => {
       const course = e.course;
       const totalSessions = course.sessions.length;
       let presentCount = 0;
       let odCount = 0;
 
-      course.sessions.forEach((s) => {
+      course.sessions.forEach((s: any) => {
         const att = s.attendances[0];
         if (att) {
           if (att.status === "PRESENT" || att.status === "LATE") {
@@ -80,7 +80,7 @@ export async function GET() {
         : 100;
 
     // 3. Active Sessions right now for enrolled courses
-    const enrolledCourseIds = enrollments.map((e) => e.courseId);
+    const enrolledCourseIds = enrollments.map((e: any) => e.courseId);
     const activeSessions = await prisma.session.findMany({
       where: {
         status: "ACTIVE",
@@ -96,7 +96,7 @@ export async function GET() {
       orderBy: { startTime: "desc" },
     });
 
-    const formattedActiveSessions = activeSessions.map((s) => ({
+    const formattedActiveSessions = activeSessions.map((s: any) => ({
       id: s.id,
       title: s.title,
       classroom: s.classroomName,

@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     const attendanceMap = new Map();
-    session.attendances.forEach((a) => {
+    session.attendances.forEach((a: any) => {
       attendanceMap.set(a.studentId, a);
     });
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       ["Roll Number", "Student Name", "Email", "Status", "Marked Time", "Verification Method"],
     ];
 
-    session.course.enrollments.forEach((e) => {
+    session.course.enrollments.forEach((e: any) => {
       const student = e.student;
       const att = attendanceMap.get(student.id);
       rows.push([

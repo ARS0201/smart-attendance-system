@@ -173,8 +173,8 @@ async function runVerification() {
       where: { id: testSession.id },
       include: { attendances: true },
     });
-    const presentCount = sessionWithAttendances?.attendances.filter((a) => a.status === "PRESENT").length;
-    const odCount = sessionWithAttendances?.attendances.filter((a) => a.status === "ON_DUTY").length;
+    const presentCount = sessionWithAttendances?.attendances.filter((a: any) => a.status === "PRESENT").length;
+    const odCount = sessionWithAttendances?.attendances.filter((a: any) => a.status === "ON_DUTY").length;
 
     assert(presentCount === 1, "Session accurately reports 1 PRESENT student");
     assert(odCount === 1, "Session accurately reports 1 ON_DUTY student");

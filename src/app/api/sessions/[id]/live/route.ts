@@ -45,16 +45,16 @@ export async function GET(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    const enrolledStudents = session.course.enrollments.map((e) => e.student);
-    const attendedStudentIds = new Set(session.attendances.map((a) => a.studentId));
+    const enrolledStudents = session.course.enrollments.map((e: any) => e.student);
+    const attendedStudentIds = new Set(session.attendances.map((a: any) => a.studentId));
 
     const absentStudents = enrolledStudents.filter(
-      (student) => !attendedStudentIds.has(student.id)
+      (student: any) => !attendedStudentIds.has(student.id)
     );
 
     const totalEnrolled = enrolledStudents.length;
-    const totalPresent = session.attendances.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
-    const totalOnDuty = session.attendances.filter((a) => a.status === "ON_DUTY").length;
+    const totalPresent = session.attendances.filter((a: any) => a.status === "PRESENT" || a.status === "LATE").length;
+    const totalOnDuty = session.attendances.filter((a: any) => a.status === "ON_DUTY").length;
     const attendancePercentage = totalEnrolled > 0 ? Math.round(((totalPresent + totalOnDuty) / totalEnrolled) * 100) : 0;
 
     return NextResponse.json({
