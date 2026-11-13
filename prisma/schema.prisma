@@ -16,6 +16,7 @@ model User {
   rollNumber     String?      @unique
   role           String       @default("STUDENT") // STUDENT | FACULTY | ADMIN
   department     String       @default("Computer Science & Engineering")
+  className      String?      @default("CSE-A") // Target Class / Section for students (e.g. CSE-A, CSE-B, IT-A)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -32,9 +33,9 @@ model Course {
   code        String       @unique
   name        String
   department  String
-  semester    Int
-  facultyId   String
-  faculty     User         @relation("FacultyCourses", fields: [facultyId], references: [id], onDelete: Restrict)
+  semester    Int          @default(5)
+  facultyId   String?
+  faculty     User?        @relation("FacultyCourses", fields: [facultyId], references: [id], onDelete: SetNull)
   enrollments Enrollment[]
   sessions    Session[]
   createdAt   DateTime     @default(now())
@@ -56,6 +57,7 @@ model Session {
   courseId      String
   facultyId     String
   title         String
+  targetClass   String?      @default("CSE-A") // Target Class for the session: CSE-A, CSE-B, IT-A, ALL
   sessionDate   DateTime     @default(now())
   startTime     DateTime     @default(now())
   endTime       DateTime?

@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const courseId = searchParams.get("courseId");
+    const targetClass = searchParams.get("targetClass");
 
     const whereClause: any = {};
     if (user.role === "FACULTY") {
@@ -26,6 +27,9 @@ export async function GET(request: NextRequest) {
     if (courseId) {
       whereClause.courseId = courseId;
     }
+    if (targetClass && targetClass !== "ALL") {
+      whereClause.OR = [{ targetClass }, { targetClass: "ALL" }];
+    }
 
     const sessions = await prisma.session.findMany({
       where: whereClause,
@@ -34,7 +38,7 @@ export async function GET(request: NextRequest) {
         attendances: {
           include: {
             student: {
-              select: { id: true, name: true, rollNumber: true, email: true },
+              select: { id: true, name: true, rollNumber: true, email: true, className: true },
             },
           },
         },
@@ -57,15 +61,60 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { courseId, title, classroomName } = body;
+    const { courseId, newCourseCode, newCourseName, title, classroomName, targetClass } = body;
 
-    if (!courseId || !title) {
-      return NextResponse.json({ error: "Course and Session Title are required." }, { status: 400 });
+    if (!title) {
+      return NextResponse.json({ error: "Session Title is required." }, { status: 400 });
+    }
+
+    let effectiveCourseId = courseId;
+
+    // If faculty is creating a new course on the fly
+    if (courseId === "NEW" || (!courseId && newCourseCode)) {
+      if (!newCourseCode) {
+        return NextResponse.json({ error: "Please enter Course Code (e.g. CS301)." }, { status: 400 });
+      }
+      const cleanCode = newCourseCode.trim().toUpperCase();
+      const existing = await prisma.course.findUnique({ where: { code: cleanCode } });
+
+      if (existing) {
+        effectiveCourseId = existing.id;
+      } else {
+        const created = await prisma.course.create({
+          data: {
+            code: cleanCode,
+            name: newCourseName?.trim() || cleanCode,
+            department: user.department || "Computer Science & Engineering",
+            semester: 5,
+            facultyId: user.id,
+          },
+        });
+        effectiveCourseId = created.id;
+      }
+    }
+
+    if (!effectiveCourseId) {
+      // Pick first available course if still unset
+      const firstCourse = await prisma.course.findFirst();
+      if (firstCourse) {
+        effectiveCourseId = firstCourse.id;
+      } else {
+        const created = await prisma.course.create({
+          data: {
+            code: "CS301",
+            name: "Database Management Systems",
+            department: user.department || "Computer Science & Engineering",
+            semester: 5,
+            facultyId: user.id,
+          },
+        });
+        effectiveCourseId = created.id;
+      }
     }
 
     // Verify course exists
     const course = await prisma.course.findUnique({
-      where: { id: courseId },
+      where: { id: effectiveCourseId },
     });
     if (!course) {
       return NextResponse.json({ error: "Selected course does not exist." }, { status: 404 });
@@ -76,10 +125,11 @@ export async function POST(request: NextRequest) {
 
     const session = await prisma.session.create({
       data: {
-        courseId,
+        courseId: effectiveCourseId,
         facultyId: user.id,
-        title,
-        classroomName: classroomName || "Main Hall",
+        title: title.trim(),
+        targetClass: targetClass?.trim().toUpperCase() || "CSE-A",
+        classroomName: classroomName?.trim() || "Auditorium Hall 101",
         status: "ACTIVE",
         qrSecret,
         sessionDate: new Date(),
@@ -96,4 +146,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-

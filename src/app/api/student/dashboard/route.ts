@@ -79,12 +79,22 @@ export async function GET() {
         ? Math.round((overallEffective / totalClassesAllCourses) * 100)
         : 100;
 
-    // 3. Active Sessions right now for enrolled courses
+    // 3. Active Sessions right now for enrolled courses or student's class
     const enrolledCourseIds = enrollments.map((e: any) => e.courseId);
+    const studentUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { className: true },
+    });
+    const studentClass = studentUser?.className || user.className || "CSE-A";
+
     const activeSessions = await prisma.session.findMany({
       where: {
         status: "ACTIVE",
-        courseId: { in: enrolledCourseIds },
+        OR: [
+          { targetClass: studentClass },
+          { targetClass: "ALL" },
+          { courseId: { in: enrolledCourseIds } },
+        ],
       },
       include: {
         course: { select: { code: true, name: true } },
@@ -100,6 +110,7 @@ export async function GET() {
       id: s.id,
       title: s.title,
       classroom: s.classroomName,
+      targetClass: s.targetClass,
       courseCode: s.course.code,
       courseName: s.course.name,
       facultyName: s.faculty.name,

@@ -34,6 +34,10 @@ export default function FacultyDashboard() {
   // New Session Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCourseId, setNewCourseId] = useState("");
+  const [newTargetClass, setNewTargetClass] = useState("CSE-A");
+  const [isCustomCourse, setIsCustomCourse] = useState(false);
+  const [customCourseCode, setCustomCourseCode] = useState("");
+  const [customCourseName, setCustomCourseName] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newClassroom, setNewClassroom] = useState("Auditorium Hall 101");
   const [creatingSession, setCreatingSession] = useState(false);
@@ -94,9 +98,12 @@ export default function FacultyDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          courseId: newCourseId,
+          courseId: isCustomCourse ? "NEW" : newCourseId,
+          newCourseCode: customCourseCode,
+          newCourseName: customCourseName,
           title: newTitle,
           classroomName: newClassroom,
+          targetClass: newTargetClass,
         }),
       });
 
@@ -215,6 +222,7 @@ export default function FacultyDashboard() {
                     courseName={activeSession.course.name}
                     sessionTitle={activeSession.title}
                     classroomName={activeSession.classroomName}
+                    targetClass={activeSession.targetClass}
                   />
                 </div>
 
@@ -349,22 +357,90 @@ export default function FacultyDashboard() {
             </div>
 
             <form onSubmit={handleCreateSession} className="p-6 space-y-4">
+              {/* Target Class / Section */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Select Course / Subject *
+                  Target Class / Section *
                 </label>
                 <select
-                  value={newCourseId}
-                  onChange={(e) => setNewCourseId(e.target.value)}
+                  value={newTargetClass}
+                  onChange={(e) => setNewTargetClass(e.target.value)}
                   required
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-indigo-900"
                 >
-                  {courses.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.code}: {c.name} (Sem {c.semester})
-                    </option>
-                  ))}
+                  <option value="CSE-A">CSE - Section A</option>
+                  <option value="CSE-B">CSE - Section B</option>
+                  <option value="CSE-C">CSE - Section C</option>
+                  <option value="IT-A">IT - Section A</option>
+                  <option value="IT-B">IT - Section B</option>
+                  <option value="ECE-A">ECE - Section A</option>
+                  <option value="ECE-B">ECE - Section B</option>
+                  <option value="EEE-A">EEE - Section A</option>
+                  <option value="MECH-A">MECH - Section A</option>
+                  <option value="CIVIL-A">CIVIL - Section A</option>
+                  <option value="AIML-A">AI & ML - Section A</option>
+                  <option value="ALL">All Sections / Combined Class</option>
                 </select>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Only students in this class will be able to see and check in to this session.
+                </p>
+              </div>
+
+              {/* Course / Subject */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Select Course / Subject *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomCourse(!isCustomCourse)}
+                    className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800"
+                  >
+                    {isCustomCourse ? "← Choose existing subject" : "➕ Type new subject"}
+                  </button>
+                </div>
+
+                {!isCustomCourse ? (
+                  <select
+                    value={newCourseId}
+                    onChange={(e) => {
+                      if (e.target.value === "NEW") {
+                        setIsCustomCourse(true);
+                      } else {
+                        setNewCourseId(e.target.value);
+                      }
+                    }}
+                    required={!isCustomCourse}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  >
+                    {courses.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.code}: {c.name}
+                      </option>
+                    ))}
+                    <option value="NEW">➕ Add New Subject / Course Code...</option>
+                  </select>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Code (e.g. CS301)"
+                      value={customCourseCode}
+                      onChange={(e) => setCustomCourseCode(e.target.value)}
+                      className="col-span-1 text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase font-semibold"
+                    />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Subject Name (e.g. Cloud Computing)"
+                      value={customCourseName}
+                      onChange={(e) => setCustomCourseName(e.target.value)}
+                      className="col-span-2 text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

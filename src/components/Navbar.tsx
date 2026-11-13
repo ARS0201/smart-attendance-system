@@ -12,6 +12,7 @@ interface NavbarProps {
     email: string;
     role: "STUDENT" | "FACULTY" | "ADMIN";
     rollNumber?: string | null;
+    className?: string | null;
     department: string;
   } | null;
 }
@@ -127,7 +128,7 @@ export default function Navbar({ user }: NavbarProps) {
                     )}
                   </div>
                   <div className="text-[10px] text-indigo-600 font-medium">
-                    {user.role} • {user.department.split(" ")[0]}
+                    {user.role} {user.className ? `• ${user.className}` : `• ${user.department.split(" ")[0]}`}
                   </div>
                 </div>
 

@@ -81,7 +81,13 @@ export default function StudentDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-xs mb-3">
-                <span className="font-mono">{user?.rollNumber || "Student"}</span> • {user?.department}
+                <span className="font-mono">{user?.rollNumber || "Student"}</span>
+                {user?.className && (
+                  <span className="bg-white/30 px-1.5 py-0.5 rounded text-[11px] font-bold">
+                    Class: {user.className}
+                  </span>
+                )}
+                <span>• {user?.department}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                 Hello, {user?.name.split(" ")[0]}!
@@ -119,6 +125,11 @@ export default function StudentDashboard() {
                   <span className="text-xs font-semibold text-amber-900">
                     {currentLiveSession.courseCode}
                   </span>
+                  {currentLiveSession.targetClass && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      🎯 Class: {currentLiveSession.targetClass}
+                    </span>
+                  )}
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm mt-0.5">
                   {currentLiveSession.title}

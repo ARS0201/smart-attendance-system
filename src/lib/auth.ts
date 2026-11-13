@@ -12,6 +12,7 @@ export interface SessionUser {
   role: "STUDENT" | "FACULTY" | "ADMIN";
   rollNumber?: string | null;
   department: string;
+  className?: string | null;
 }
 
 export function createToken(payload: SessionUser): string {

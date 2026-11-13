@@ -95,7 +95,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Check Course Enrollment
+    // 3. Check Course Enrollment & Class Matching
+    const studentUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { className: true },
+    });
+    const studentClass = studentUser?.className || user.className || "CSE-A";
+
     const enrollment = await prisma.enrollment.findUnique({
       where: {
         studentId_courseId: {
@@ -106,12 +112,29 @@ export async function POST(request: NextRequest) {
     });
 
     if (!enrollment) {
-      return NextResponse.json(
-        {
-          error: `You are not enrolled in ${session.course.code} - ${session.course.name}. Attendance denied.`,
-        },
-        { status: 403 }
-      );
+      // If student is in the target class (or targetClass is ALL), auto-enroll them in the course!
+      if (!session.targetClass || session.targetClass === "ALL" || session.targetClass === studentClass) {
+        await prisma.enrollment.upsert({
+          where: {
+            studentId_courseId: {
+              studentId: user.id,
+              courseId: session.courseId,
+            },
+          },
+          update: {},
+          create: {
+            studentId: user.id,
+            courseId: session.courseId,
+          },
+        });
+      } else {
+        return NextResponse.json(
+          {
+            error: `This session is for Class ${session.targetClass}. You are registered in Class ${studentClass}.`,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // 4. Duplicate Check

@@ -6,7 +6,7 @@ import { setSessionCookie } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, role, rollNumber, department } = body;
+    const { name, email, password, role, rollNumber, department, className } = body;
 
     // 1. Basic validation
     if (!name || !email || !password) {
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
         role: userRole,
         rollNumber: userRole === "STUDENT" ? rollNumber.trim().toUpperCase() : null,
         department: department?.trim() || "Computer Science & Engineering",
+        className: userRole === "STUDENT" ? (className?.trim().toUpperCase() || "CSE-A") : null,
       },
     });
 
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
               studentId: newUser.id,
               courseId: c.id,
             })),
-            // skipDuplicates prevents errors if already enrolled
+            skipDuplicates: true,
           });
         }
       } catch (enrollErr) {
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
       role: newUser.role as "STUDENT" | "FACULTY" | "ADMIN",
       rollNumber: newUser.rollNumber,
       department: newUser.department,
+      className: newUser.className,
     };
 
     await setSessionCookie(sessionUser);

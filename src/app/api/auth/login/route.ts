@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       role: user.role as "STUDENT" | "FACULTY" | "ADMIN",
       rollNumber: user.rollNumber,
       department: user.department,
+      className: (user as any).className || null,
     };
 
     await setSessionCookie(sessionUser);

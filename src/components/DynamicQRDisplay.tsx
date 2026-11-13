@@ -19,6 +19,7 @@ interface DynamicQRDisplayProps {
   courseName: string;
   sessionTitle: string;
   classroomName?: string | null;
+  targetClass?: string | null;
 }
 
 export default function DynamicQRDisplay({
@@ -27,6 +28,7 @@ export default function DynamicQRDisplay({
   courseName,
   sessionTitle,
   classroomName,
+  targetClass,
 }: DynamicQRDisplayProps) {
   const [qrString, setQrString] = useState<string>("");
   const [token, setToken] = useState<string>("");
@@ -154,6 +156,11 @@ export default function DynamicQRDisplay({
           }`}
         >
           <span className="font-semibold">{sessionTitle}</span>
+          {targetClass && (
+            <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-400/30">
+              Class: {targetClass}
+            </span>
+          )}
           {classroomName && (
             <span className="flex items-center gap-1 text-xs opacity-80">
               • <MapPin className="h-3.5 w-3.5" /> {classroomName}
