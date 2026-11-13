@@ -50,3 +50,4 @@ verifySupabase()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
