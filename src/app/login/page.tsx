@@ -127,29 +127,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleQuickDemo = async (demoRole: "FACULTY" | "STUDENT" | "ADMIN") => {
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demoRole }),
-      });
-      const data = await res.json();
-      if (res.ok && data.redirectUrl) {
-        router.push(data.redirectUrl);
-        router.refresh();
-      } else {
-        setErrorMsg(data.error || "Failed demo login");
-      }
-    } catch (err) {
-      setErrorMsg("Demo login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -216,54 +193,11 @@ export default function AuthPage() {
 
           {/* SIGN IN FORM */}
           {authMode === "LOGIN" ? (
-            <>
-              {/* Quick Demo Persona Section */}
-              <div className="mb-5 p-3.5 rounded-2xl bg-indigo-50/80 border border-indigo-100">
-                <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1 mb-2">
-                  <Zap className="h-3.5 w-3.5 text-indigo-600" />
-                  1-Click Instant Persona Login
-                </span>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDemo("FACULTY")}
-                    disabled={loading}
-                    className="py-2 px-2.5 rounded-xl bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 font-semibold border border-indigo-200 shadow-2xs transition-all flex flex-col items-center text-center group"
-                  >
-                    <span className="font-bold text-xs">Faculty Portal</span>
-                    <span className="text-[10px] text-slate-400 group-hover:text-indigo-200">
-                      Dr. Alan Turing
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDemo("STUDENT")}
-                    disabled={loading}
-                    className="py-2 px-2.5 rounded-xl bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 font-semibold border border-indigo-200 shadow-2xs transition-all flex flex-col items-center text-center group"
-                  >
-                    <span className="font-bold text-xs">Student Portal</span>
-                    <span className="text-[10px] text-slate-400 group-hover:text-indigo-200">
-                      John Doe (21CS001)
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="relative my-3">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200" />
-                </div>
-                <div className="relative flex justify-center text-[11px] uppercase">
-                  <span className="bg-white px-2.5 text-slate-400 font-medium">Or Sign in with Registered ID</span>
-                </div>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-3.5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Email Address
-                  </label>
+            <form onSubmit={handleLogin} className="space-y-3.5 animate-in fade-in">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Email Address
+                </label>
                   <div className="relative">
                     <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
@@ -301,7 +235,6 @@ export default function AuthPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </form>
-            </>
           ) : (
             /* CREATE ACCOUNT (SIGN UP) FORM */
             <form onSubmit={handleSignup} className="space-y-3 animate-in fade-in">

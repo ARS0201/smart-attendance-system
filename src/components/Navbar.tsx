@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { QrCode, LogOut, User, Shield, GraduationCap, School, RefreshCw } from "lucide-react";
+import { QrCode, LogOut, User, Shield, GraduationCap } from "lucide-react";
 
 interface NavbarProps {
   user?: {
@@ -20,7 +20,6 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [switching, setSwitching] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -29,26 +28,6 @@ export default function Navbar({ user }: NavbarProps) {
       router.refresh();
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const handleSwitchPersona = async (demoRole: "FACULTY" | "STUDENT" | "ADMIN") => {
-    setSwitching(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demoRole }),
-      });
-      const data = await res.json();
-      if (data.redirectUrl) {
-        router.push(data.redirectUrl);
-        router.refresh();
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSwitching(false);
     }
   };
 
@@ -68,49 +47,12 @@ export default function Navbar({ user }: NavbarProps) {
           </div>
         </Link>
 
-        {/* User Info & Persona Switcher */}
+        {/* User Info */}
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              {/* Persona Switcher Quick Dropdown / Chips */}
-              <div className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium border border-slate-200">
-                <span className="text-slate-600 px-2 flex items-center gap-1">
-                  <RefreshCw className={`h-3 w-3 ${switching ? "animate-spin" : ""}`} /> Switch:
-                </span>
-                <button
-                  onClick={() => handleSwitchPersona("FACULTY")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    user.role === "FACULTY"
-                      ? "bg-white text-indigo-700 font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Faculty
-                </button>
-                <button
-                  onClick={() => handleSwitchPersona("STUDENT")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    user.role === "STUDENT"
-                      ? "bg-white text-indigo-700 font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Student
-                </button>
-                <button
-                  onClick={() => handleSwitchPersona("ADMIN")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    user.role === "ADMIN"
-                      ? "bg-white text-indigo-700 font-bold shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Admin
-                </button>
-              </div>
-
               {/* Profile Card */}
-              <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+              <div className="flex items-center gap-2.5">
                 <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm border border-slate-300">
                   {user.role === "FACULTY" ? (
                     <GraduationCap className="h-4 w-4 text-indigo-600" />
